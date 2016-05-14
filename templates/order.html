@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<title>Snacbot Order</title>
+		<link rel="stylesheet"
+			href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/order.css">
+	</head>
+	<body>
+		<div class="container">
+      <h1>Order form</h1>
+      <canvas id="map" width="400" height="400"></canvas>
+      {{range .Snacks}}
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="col-md-4">
+              <img src="{{.Image}}" width="100px" height="100px">
+            </div>
+            <div class="col-md-8">
+              <h3>{{.Name}}</h3>
+              <select class="form-control">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      {{else}}
+        <p class="bg-danger">No snacks registered</p>
+      {{end}}
+		</div>
+	</body>
+</html>

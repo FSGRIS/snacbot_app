@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Snacbot Login</title>
+		<link rel="stylesheet"
+		    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+		<link rel="stylesheet" href="/static/css/frontpage.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<form id="login-form">
+				<h2>Snacbot login</h2>
+				<hr>
+				<div class="form-group">
+					<input type="text" class="form-control" id="username" placeholder="Username">
+				</div>
+				<div class="form-group">
+					<input type="password" class="form-control" id="password" placeholder="Password">
+				</div>
+        <div class="alert alert-danger" id="status" style="display: none;"></div>
+				<button type="button" id="login-btn"
+            class="btn btn-md btn-primary btn-block">Sign in</button>
+			</form>
+			<br>
+			<a href="create_account">New user? Create account here</a>
+		</div>
+	</body>
+  <script src="/static/js/login.js"></script>
+</html>
