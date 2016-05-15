@@ -1,10 +1,10 @@
 window.onload = function() {
   $('#login-btn').on('click', function(e) {
-    var data = {
+    var body = {
       email: $('#email').val(),
       password: $('#password').val()
     };
-    $.post('/api/login', JSON.stringify(data), 'json')
+    $.post('/api/login', JSON.stringify(body), 'json')
       .done(function() {
         window.location.href = '/order';
       })

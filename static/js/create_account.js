@@ -3,13 +3,13 @@ window.onload = function() {
     if ($('#password').val() !== $('#confirmPassword').val()) {
       $('#status').text("Passwords do not match.").show();
     }
-    var data = {
+    var body = {
       email: $('#email').val(),
       password: $('#password').val(),
       orgName: $('#orgName').val(),
       orgCode: $('#orgCode').val()
     };
-    $.post('/api/create_account', JSON.stringify(data), 'json')
+    $.post('/api/create_account', JSON.stringify(body), 'json')
       .done(function() {
         window.location.href = '/order';
       })

@@ -14,28 +14,39 @@
 		<div class="container">
       <h1>Order form</h1>
       <div id="map"></div>
-      {{range .Snacks}}
-        <div class="panel panel-default">
-          <div class="panel-body">
-            <div class="col-md-4">
-              <img src="/static/img/{{.Image}}" width="100px" height="100px">
-            </div>
-            <div class="col-md-8">
-              <h3>{{.Name}}</h3>
-              <select class="form-control">
-                <option>0</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-              </select>
+      <form>
+        <div class="checkbox">
+          <label>
+            <input id="save-location" type="checkbox"> Remember location
+          </label>
+        </div>
+        {{range .Snacks}}
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <div class="col-md-4">
+                <img src="/static/img/{{.Image}}" width="100%" height="100%">
+              </div>
+              <div data-snack-id="{{.ID}}" class="quantity col-md-8">
+                <h3>{{.Name}}</h3>
+                <select class="form-control">
+                  <option>0</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-      {{else}}
-        <p class="bg-danger">No snacks registered</p>
-      {{end}}
+        {{else}}
+          <div class="alert alert-danger" style="display: none;">No snacks registered</div>
+        {{end}}
+        <div id="status" style="display: none;"></div>
+        <button id="order-btn" type="button"
+            class="btn btn-lg btn-primary btn-block">Place order</button>
+      </form>
+      <br>
 		</div>
 	</body>
 </html>

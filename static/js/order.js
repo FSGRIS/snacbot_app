@@ -1,9 +1,17 @@
 window.onload = function() {
-  var deliveryPoints = [
+  var deliveryLocations = [
     { id: 1, x: 390, y: 250, selected: false },
     { id: 2, x: 250, y: 420, selected: true },
     { id: 3, x: 150, y: 140, selected: false }
   ];
+  var selectedLocation;
+  for (var i = 0; i < deliveryLocations.length; i++) {
+    var l = deliveryLocations[i];
+    if (l.selected) {
+      selectedLocation = l;
+      break;
+    }
+  }
 
   var w = 500;
   var h = 500;
@@ -32,7 +40,7 @@ window.onload = function() {
     .attr('fill', 'url(#bg)');
 
   var circles = svg.selectAll('circle')
-    .data(deliveryPoints)
+    .data(deliveryLocations)
     .enter()
     .append('circle');
 
@@ -49,11 +57,47 @@ window.onload = function() {
     .attr('stroke-width', 1)
     .on('click', function(d, i) {
       d.selected = true;
-      for (var j = 0; j < deliveryPoints.length; j++) {
+      selectedLocation = d;
+      for (var j = 0; j < deliveryLocations.length; j++) {
         if (j != i) {
-          deliveryPoints[j].selected = false;
+          deliveryLocations[j].selected = false;
         }
       }
       update();
     });
+
+  function showStatus(msg, success) {
+    $('#status')
+      .toggleClass(false)
+      .toggleClass('alert ' + (success ? 'alert-success' : 'alert-danger'))
+      .text(msg)
+      .show();
+  }
+
+  $('#order-btn').on('click', function() {
+    var snacks = [];
+    $('.quantity').each(function() {
+      var id = parseInt($(this).attr('data-snack-id'));
+      var quantity = parseInt($(this).find('select option:selected').text());
+      if (quantity > 0) {
+        snacks.push({id: id, quantity: quantity})
+      }
+    });
+    if (snacks.length === 0) {
+      showStatus('No snacks selected', false);
+      return;
+    }
+    var body = {
+      locationID: selectedLocation.id,
+      saveLocation: $('#save-location').is(':checked'),
+      snacks: snacks,
+    };
+    $.post('/api/order', JSON.stringify(body), 'json')
+      .done(function() {
+        showStatus('Order placed!', true);
+      })
+      .fail(function(xhr) {
+        showStatus('Order failed: ' + xhr.responseText);
+      });
+  });
 }

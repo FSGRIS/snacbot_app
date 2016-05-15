@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -75,6 +76,22 @@ func getSessionID(r *http.Request) (int64, bool) {
 		return 0, false
 	}
 	return sid, true
+}
+
+func getUser(db *sqlx.DB, r *http.Request) *user {
+	sid, ok := getSessionID(r)
+	if !ok {
+		return nil
+	}
+	var u user
+	err := db.Get(&u, "select * from users where sid=?", sid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil
+		}
+		panic(err)
+	}
+	return &u
 }
 
 func badRequest(w http.ResponseWriter, msg string) {

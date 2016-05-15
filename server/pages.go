@@ -1,7 +1,6 @@
 package server
 
 import (
-	"database/sql"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -41,6 +40,7 @@ func (p *pages) createAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 type Snack struct {
+	ID    int64
 	Name  string
 	Image string
 }
@@ -50,25 +50,16 @@ type OrderPage struct {
 }
 
 func (p *pages) order(w http.ResponseWriter, r *http.Request) {
-	sid, ok := getSessionID(r)
-	if !ok {
+	u := getUser(p.db, r)
+	if u == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	var u user
-	err := p.db.Get(&u, "select * from users where sid=?", sid)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-		panic(err)
-	}
 	page := OrderPage{
 		Snacks: []Snack{
-			{Name: "Snickers", Image: "snickers.jpg"},
-			{Name: "KitKat", Image: "kitkat.jpg"},
-			{Name: "Tim's Potato Chips", Image: "tims.jpg"},
+			{ID: 1, Name: "Snickers", Image: "snickers.jpg"},
+			{ID: 2, Name: "KitKat", Image: "kitkat.jpg"},
+			{ID: 3, Name: "Tim's Potato Chips", Image: "tims.jpg"},
 		},
 	}
 	t, err := template.ParseFiles(p.filename("order"))

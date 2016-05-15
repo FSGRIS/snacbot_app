@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"log"
 	"math/rand"
 	"net/http"
 
@@ -46,7 +47,7 @@ func (a *api) login(w http.ResponseWriter, r *http.Request) {
 func (a *api) logout(w http.ResponseWriter, r *http.Request) {
 	sid, ok := getSessionID(r)
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	result := a.db.MustExec("update users set sid=NULL where sid=?", sid)
@@ -97,5 +98,23 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *api) order(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	var b struct {
+		LocationID   int64 `json:"locationID"`
+		SaveLocation bool  `json:"saveLocation"`
+		Snacks       []struct {
+			ID       int64 `json:"id"`
+			Quantity int   `json:"quantity"`
+		} `json:"snacks"`
+	}
+	if !decode(w, r, &b) {
+		return
+	}
+	u := getUser(a.db, r)
+	if u == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	// TODO: Save location if specified.
+	log.Println("placing order?")
+	// TODO: Tell snacbot to deliver the goods!
 }
