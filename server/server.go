@@ -49,7 +49,6 @@ func tryCreateTables(db *sqlx.DB) {
 		)`,
 		`create table if not exists users (
 			id integer primary key,
-			username text,
 			email text,
 			password text,
 			oid integer,
@@ -59,7 +58,8 @@ func tryCreateTables(db *sqlx.DB) {
 			id integer primary key,
 			name text,
 			quantity integer,
-			image text
+			image text,
+			oid integer
 		)`,
 	}
 	for _, q := range qs {

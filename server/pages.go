@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -14,12 +15,12 @@ type pages struct {
 	db          *sqlx.DB
 }
 
-func (p *pages) filename(r *http.Request) string {
-	return filepath.Join(p.templateDir, r.URL.Path) + ".html"
+func (p *pages) filename(f string) string {
+	return filepath.Join(p.templateDir, f) + ".html"
 }
 
-func (p *pages) serveFile(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadFile(p.filename(r))
+func (p *pages) serveFile(w http.ResponseWriter, f string) {
+	b, err := ioutil.ReadFile(p.filename(f))
 	if err != nil {
 		panic(err)
 	}
@@ -32,11 +33,11 @@ func (p *pages) login(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/order", http.StatusSeeOther)
 		return
 	}
-	p.serveFile(w, r)
+	p.serveFile(w, "login")
 }
 
 func (p *pages) createAccount(w http.ResponseWriter, r *http.Request) {
-	p.serveFile(w, r)
+	p.serveFile(w, "create_account")
 }
 
 type Snack struct {
@@ -49,10 +50,28 @@ type OrderPage struct {
 }
 
 func (p *pages) order(w http.ResponseWriter, r *http.Request) {
-	page := OrderPage{
-		Snacks: []Snack{{Name: "Snickers", Image: "/static/img/snickers.jpg"}, {Name: "KitKat"}, {Name: "M&Ms"}},
+	sid, ok := getSessionID(r)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
 	}
-	t, err := template.ParseFiles(p.filename(r))
+	var u user
+	err := p.db.Get(&u, "select * from users where sid=?", sid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		panic(err)
+	}
+	page := OrderPage{
+		Snacks: []Snack{
+			{Name: "Snickers", Image: "snickers.jpg"},
+			{Name: "KitKat", Image: "kitkat.jpg"},
+			{Name: "Tim's Potato Chips", Image: "tims.jpg"},
+		},
+	}
+	t, err := template.ParseFiles(p.filename("order"))
 	if err != nil {
 		panic(err)
 	}

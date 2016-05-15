@@ -6,13 +6,13 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type user struct {
 	ID       int64  `db:"id"`
-	Username string `db:"username"`
 	Email    string `db:"email"`
 	Password string `db:"password"`
 	OID      string `db:"oid"`
@@ -32,7 +32,7 @@ func userExists(db *sqlx.DB, field string, v interface{}) bool {
 func decode(w http.ResponseWriter, r *http.Request, b interface{}) bool {
 	d := json.NewDecoder(r.Body)
 	if err := d.Decode(&b); err != nil {
-		log.Println(err)
+		log.Println("[decode]", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return false
 	}
@@ -52,9 +52,11 @@ func writeJSON(w http.ResponseWriter, res interface{}) {
 
 func grantCookie(w http.ResponseWriter, sid int64) {
 	http.SetCookie(w, &http.Cookie{
-		Name:   cookieName,
-		Value:  strconv.FormatInt(sid, 10),
-		MaxAge: cookieMaxAge,
+		Name:     cookieName,
+		Value:    strconv.FormatInt(sid, 10),
+		Expires:  time.Now().Add(time.Hour * 24 * 7),
+		HttpOnly: true,
+		Path:     "/",
 	})
 }
 
@@ -62,6 +64,7 @@ func getSessionID(r *http.Request) (int64, bool) {
 	c, err := r.Cookie(cookieName)
 	if err != nil {
 		if err == http.ErrNoCookie {
+			log.Println("no cookie")
 			return 0, false
 		}
 		panic(err)

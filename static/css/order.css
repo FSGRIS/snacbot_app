@@ -1,3 +1,12 @@
+.container {
+	max-width: 550px;
+}
+
 h1 {
 	text-align: center;
+}
+
+svg {
+	display: block;
+	margin: auto;
 }

@@ -14,7 +14,7 @@ type api struct {
 
 func (a *api) login(w http.ResponseWriter, r *http.Request) {
 	var b struct {
-		Username string `json:"username"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 	if !decode(w, r, &b) {
@@ -23,12 +23,12 @@ func (a *api) login(w http.ResponseWriter, r *http.Request) {
 	var uid int64
 	var sid sql.NullInt64
 	err := a.db.QueryRowx(
-		"select id, sid from users where username=? and password=?",
-		b.Username, b.Password).
+		"select id, sid from users where email=? and password=?",
+		b.Email, b.Password).
 		Scan(&uid, &sid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			badRequest(w, "invalid username / password")
+			badRequest(w, "Invalid email / password combo.")
 			return
 		}
 		panic(err)
@@ -62,7 +62,6 @@ func (a *api) logout(w http.ResponseWriter, r *http.Request) {
 
 func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 	var b struct {
-		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 		OrgName  string `json:"orgName"`
@@ -71,12 +70,8 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &b) {
 		return
 	}
-	if userExists(a.db, "username", b.Username) {
-		badRequest(w, "username taken")
-		return
-	}
 	if userExists(a.db, "email", b.Email) {
-		badRequest(w, "email taken")
+		badRequest(w, "Email already registered.")
 		return
 	}
 	// TODO: Check company table for code.
@@ -86,7 +81,7 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 		Scan(&oid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			badRequest(w, "invalid org")
+			badRequest(w, "Invalid organization information.")
 			return
 		}
 		panic(err)
@@ -94,9 +89,9 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 	sid := rand.Int63()
 	// I know we shouldn't store plaintext passwords, but fuck it.
 	a.db.MustExec(`
-		insert into users (username, email, password, oid, sid)
-		values (?, ?, ?, ?, ?)`,
-		b.Username, b.Email, b.Password, oid, sid)
+		insert into users (email, password, oid, sid)
+		values (?, ?, ?, ?)`,
+		b.Email, b.Password, oid, sid)
 	grantCookie(w, sid)
 	w.WriteHeader(http.StatusOK)
 }

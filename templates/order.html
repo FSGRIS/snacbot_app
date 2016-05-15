@@ -6,16 +6,19 @@
 			href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/order.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="/static/js/order.js"></script>
 	</head>
 	<body>
 		<div class="container">
       <h1>Order form</h1>
-      <canvas id="map" width="400" height="400"></canvas>
+      <div id="map"></div>
       {{range .Snacks}}
         <div class="panel panel-default">
           <div class="panel-body">
             <div class="col-md-4">
-              <img src="{{.Image}}" width="100px" height="100px">
+              <img src="/static/img/{{.Image}}" width="100px" height="100px">
             </div>
             <div class="col-md-8">
               <h3>{{.Name}}</h3>

@@ -6,6 +6,8 @@
 			  href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/frontpage.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="/static/js/create_account.js"></script>
 	</head>
 	<body>
 		<div class="container">
@@ -13,11 +15,8 @@
 				<h2>Snacbot account creation</h2>
         <hr>
 				<div class="form-group">
-					<input type="text" class="form-control" id="username" placeholder="Username">
+					<input type="text" class="form-control" id="email" placeholder="Email">
 				</div>
-        <div class="form-group">
-					<input type="email" class="form-control" id="email" placeholder="Email">
-        </div>
 				<div class="form-group">
 					<input type="password" class="form-control" id="password" placeholder="Password">
 				</div>
@@ -25,7 +24,16 @@
 					<input type="password" class="form-control" id="confirmPassword"
             placeholder="Confirm password">
 				</div>
-        <button class="btn btn-md btn-primary btn-block" type="submit">Create account</button>
+				<div class="form-group">
+					<input type="text" class="form-control" id="orgName" placeholder="Organization name">
+				</div>
+        <div class="form-group">
+          <input type="password" class="form-control" id="orgCode"
+              placeholder="Organization passcode">
+        </div>
+        <div class="alert alert-danger" id="status" style="display: none;"></div>
+        <button type="button" id="create-btn"
+            class="btn btn-md btn-primary btn-block">Create account</button>
 			</form>
 		</div>
 	</body>
