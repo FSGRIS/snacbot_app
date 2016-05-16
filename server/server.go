@@ -21,17 +21,18 @@ func Run(dbFile, staticDir, templateDir string) {
 		panic(err)
 	}
 	tryCreateTables(db)
-	a := &api{db}
-	p := &pages{templateDir: templateDir, db: db}
+	ros := newRosServer("localhost:9090")
+	api := newApiServer(db, ros)
+	pages := &pageServer{templateDir, db}
 	n := negroni.Classic()
 	r := mux.NewRouter()
-	r.HandleFunc("/login", p.login).Methods("GET")
-	r.HandleFunc("/create_account", p.createAccount).Methods("GET")
-	r.HandleFunc("/order", p.order).Methods("GET")
-	r.HandleFunc("/api/login", a.login).Methods("POST")
-	r.HandleFunc("/api/logout", a.logout).Methods("POST")
-	r.HandleFunc("/api/create_account", a.createAccount).Methods("POST")
-	r.HandleFunc("/api/order", a.order).Methods("POST")
+	r.HandleFunc("/login", pages.login).Methods("GET")
+	r.HandleFunc("/create_account", pages.createAccount).Methods("GET")
+	r.HandleFunc("/order", pages.order).Methods("GET")
+	r.HandleFunc("/api/login", api.login).Methods("POST")
+	r.HandleFunc("/api/logout", api.logout).Methods("GET")
+	r.HandleFunc("/api/create_account", api.createAccount).Methods("POST")
+	r.HandleFunc("/api/order", api.order).Methods("POST")
 	r.PathPrefix("/static/").Handler(
 		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
 	n.UseHandler(r)

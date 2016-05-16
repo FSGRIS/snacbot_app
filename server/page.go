@@ -9,34 +9,34 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type pages struct {
+type pageServer struct {
 	templateDir string
 	db          *sqlx.DB
 }
 
-func (p *pages) filename(f string) string {
-	return filepath.Join(p.templateDir, f) + ".html"
+func (s *pageServer) filename(f string) string {
+	return filepath.Join(s.templateDir, f) + ".html"
 }
 
-func (p *pages) serveFile(w http.ResponseWriter, f string) {
-	b, err := ioutil.ReadFile(p.filename(f))
+func (s *pageServer) serveFile(w http.ResponseWriter, f string) {
+	b, err := ioutil.ReadFile(s.filename(f))
 	if err != nil {
 		panic(err)
 	}
 	w.Write(b)
 }
 
-func (p *pages) login(w http.ResponseWriter, r *http.Request) {
+func (s *pageServer) login(w http.ResponseWriter, r *http.Request) {
 	sid, ok := getSessionID(r)
-	if ok && userExists(p.db, "sid", sid) {
+	if ok && userExists(s.db, "sid", sid) {
 		http.Redirect(w, r, "/order", http.StatusSeeOther)
 		return
 	}
-	p.serveFile(w, "login")
+	s.serveFile(w, "login")
 }
 
-func (p *pages) createAccount(w http.ResponseWriter, r *http.Request) {
-	p.serveFile(w, "create_account")
+func (s *pageServer) createAccount(w http.ResponseWriter, r *http.Request) {
+	s.serveFile(w, "create_account")
 }
 
 type Snack struct {
@@ -49,8 +49,8 @@ type OrderPage struct {
 	Snacks []Snack
 }
 
-func (p *pages) order(w http.ResponseWriter, r *http.Request) {
-	u := getUser(p.db, r)
+func (s *pageServer) order(w http.ResponseWriter, r *http.Request) {
+	u := getUser(s.db, r)
 	if u == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
@@ -62,7 +62,7 @@ func (p *pages) order(w http.ResponseWriter, r *http.Request) {
 			{ID: 3, Name: "Tim's Potato Chips", Image: "tims.jpg"},
 		},
 	}
-	t, err := template.ParseFiles(p.filename("order"))
+	t, err := template.ParseFiles(s.filename("order"))
 	if err != nil {
 		panic(err)
 	}

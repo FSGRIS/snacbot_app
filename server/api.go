@@ -9,11 +9,18 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type api struct {
-	db *sqlx.DB
+type apiServer struct {
+	db  *sqlx.DB
+	ros *rosServer
 }
 
-func (a *api) login(w http.ResponseWriter, r *http.Request) {
+func newApiServer(db *sqlx.DB, ros *rosServer) *apiServer {
+	s := &apiServer{db, ros}
+	s.ros.advertise("snacbot_orders", "std_msgs/String")
+	return s
+}
+
+func (s *apiServer) login(w http.ResponseWriter, r *http.Request) {
 	var b struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -23,7 +30,7 @@ func (a *api) login(w http.ResponseWriter, r *http.Request) {
 	}
 	var uid int64
 	var sid sql.NullInt64
-	err := a.db.QueryRowx(
+	err := s.db.QueryRowx(
 		"select id, sid from users where email=? and password=?",
 		b.Email, b.Password).
 		Scan(&uid, &sid)
@@ -38,19 +45,19 @@ func (a *api) login(w http.ResponseWriter, r *http.Request) {
 	if !sid.Valid {
 		// No current login session.
 		sid.Int64 = rand.Int63()
-		a.db.MustExec("update users set sid=? where id=?", sid.Int64, uid)
+		s.db.MustExec("update users set sid=? where id=?", sid.Int64, uid)
 	}
 	grantCookie(w, sid.Int64)
 	w.WriteHeader(http.StatusOK)
 }
 
-func (a *api) logout(w http.ResponseWriter, r *http.Request) {
+func (s *apiServer) logout(w http.ResponseWriter, r *http.Request) {
 	sid, ok := getSessionID(r)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	result := a.db.MustExec("update users set sid=NULL where sid=?", sid)
+	result := s.db.MustExec("update users set sid=NULL where sid=?", sid)
 	if n, err := result.RowsAffected(); n == 0 {
 		// No rows affected -- invalid session id.
 		w.WriteHeader(http.StatusUnauthorized)
@@ -61,7 +68,7 @@ func (a *api) logout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
+func (s *apiServer) createAccount(w http.ResponseWriter, r *http.Request) {
 	var b struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -71,13 +78,13 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &b) {
 		return
 	}
-	if userExists(a.db, "email", b.Email) {
+	if userExists(s.db, "email", b.Email) {
 		badRequest(w, "Email already registered.")
 		return
 	}
 	// TODO: Check company table for code.
 	var oid int64
-	err := a.db.QueryRowx(
+	err := s.db.QueryRowx(
 		"select id from orgs where name=? and code=?", b.OrgName, b.OrgCode).
 		Scan(&oid)
 	if err != nil {
@@ -89,7 +96,7 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 	}
 	sid := rand.Int63()
 	// I know we shouldn't store plaintext passwords, but fuck it.
-	a.db.MustExec(`
+	s.db.MustExec(`
 		insert into users (email, password, oid, sid)
 		values (?, ?, ?, ?)`,
 		b.Email, b.Password, oid, sid)
@@ -97,7 +104,7 @@ func (a *api) createAccount(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (a *api) order(w http.ResponseWriter, r *http.Request) {
+func (s *apiServer) order(w http.ResponseWriter, r *http.Request) {
 	var b struct {
 		LocationID   int64 `json:"locationID"`
 		SaveLocation bool  `json:"saveLocation"`
@@ -109,7 +116,7 @@ func (a *api) order(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &b) {
 		return
 	}
-	u := getUser(a.db, r)
+	u := getUser(s.db, r)
 	if u == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -117,4 +124,7 @@ func (a *api) order(w http.ResponseWriter, r *http.Request) {
 	// TODO: Save location if specified.
 	log.Println("placing order?")
 	// TODO: Tell snacbot to deliver the goods!
+	s.ros.publish("snacbot_orders", dict{
+		"data": "someone placed an order!",
+	})
 }
