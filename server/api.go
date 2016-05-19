@@ -16,7 +16,7 @@ type apiServer struct {
 
 func newApiServer(db *sqlx.DB, ros *rosServer) *apiServer {
 	s := &apiServer{db, ros}
-	s.ros.advertise("snacbot_orders", "std_msgs/String")
+	s.ros.advertise("snacbot/orders", "snacbot/Order")
 	return s
 }
 
@@ -123,8 +123,8 @@ func (s *apiServer) order(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO: Save location if specified.
 	log.Println("placing order?")
-	// TODO: Tell snacbot to deliver the goods!
-	s.ros.publish("snacbot_orders", dict{
-		"data": "someone placed an order!",
+	s.ros.publish("snacbot/orders", dict{
+		"location_id": b.LocationID,
+		"snacks":      b.Snacks,
 	})
 }
