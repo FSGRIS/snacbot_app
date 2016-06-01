@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"math/rand"
 	"net/http"
@@ -9,14 +10,47 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type point struct {
+	X int64 `json:"x"`
+	Y int64 `json:"y"`
+}
+
 type apiServer struct {
-	db  *sqlx.DB
-	ros *rosServer
+	db   *sqlx.DB
+	ros  *rosServer
+	locs map[int64]point
+}
+
+func expect(ok bool, t string) {
+	if !ok {
+		panic("expected " + t)
+	}
 }
 
 func newApiServer(db *sqlx.DB, ros *rosServer) *apiServer {
-	s := &apiServer{db, ros}
+	s := &apiServer{
+		db:   db,
+		ros:  ros,
+		locs: make(map[int64]point),
+	}
 	s.ros.advertise("snacbot/orders", "snacbot/Order")
+	r := s.ros.callService("snacbot/locations", make([]interface{}, 0))
+	var resp struct {
+		Values struct {
+			Locs []struct {
+				ID int64 `json:"id"`
+				X  int64 `json:"x"`
+				Y  int64 `json:"y"`
+			} `json:"locs"`
+		} `json:"values"`
+	}
+	if err := json.NewDecoder(r).Decode(&resp); err != nil {
+		panic(err)
+	}
+	for _, l := range resp.Values.Locs {
+		s.locs[l.ID] = point{X: l.X, Y: l.Y}
+	}
+	log.Printf("%#v\n", s.locs)
 	return s
 }
 
