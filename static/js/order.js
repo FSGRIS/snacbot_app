@@ -1,12 +1,19 @@
 window.onload = function() {
-  var deliveryLocations = [
-    { id: 1, x: 390, y: 250, selected: false },
-    { id: 2, x: 250, y: 420, selected: true },
-    { id: 3, x: 150, y: 140, selected: false }
-  ];
-  var selectedLocation;
-  for (var i = 0; i < deliveryLocations.length; i++) {
-    var l = deliveryLocations[i];
+  $.get('/api/locations')
+    .done(populateMap)
+    .fail(function(xhr) {
+      alert("Could not get locations: " + xhr.responseText);
+    });
+};
+
+function populateMap(locations) {
+  Object.keys(locations).forEach(function(lid) {
+    locations[lid].selected = false;
+    console.log(locations[lid]);
+  });
+  var selectedLocation = null;
+  for (var i = 0; i < locations.length; i++) {
+    var l = locations[i];
     if (l.selected) {
       selectedLocation = l;
       break;
@@ -40,7 +47,7 @@ window.onload = function() {
     .attr('fill', 'url(#bg)');
 
   var circles = svg.selectAll('circle')
-    .data(deliveryLocations)
+    .data(locations)
     .enter()
     .append('circle');
 
@@ -58,9 +65,9 @@ window.onload = function() {
     .on('click', function(d, i) {
       d.selected = true;
       selectedLocation = d;
-      for (var j = 0; j < deliveryLocations.length; j++) {
+      for (var j = 0; j < locations.length; j++) {
         if (j != i) {
-          deliveryLocations[j].selected = false;
+          locations[j].selected = false;
         }
       }
       update();
@@ -85,6 +92,10 @@ window.onload = function() {
     });
     if (snacks.length === 0) {
       showStatus('No snacks selected', false);
+      return;
+    }
+    if (selectedLocation === null) {
+      showStatus('No location selected', false);
       return;
     }
     var body = {

@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -52,6 +53,15 @@ func newApiServer(db *sqlx.DB, ros *rosServer) *apiServer {
 	}
 	log.Printf("%#v\n", s.locs)
 	return s
+}
+
+func (s *apiServer) getLocations(w http.ResponseWriter, r *http.Request) {
+	// Convert locs from int->point to string->point, to satisfy JSON spec.
+	locs := make(map[string]point)
+	for lid, p := range s.locs {
+		locs[strconv.FormatInt(lid, 10)] = p
+	}
+	writeJSON(w, locs)
 }
 
 func (s *apiServer) login(w http.ResponseWriter, r *http.Request) {
@@ -155,10 +165,14 @@ func (s *apiServer) order(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	snackIDs := make([]int64, len(b.Snacks))
+	for i, s := range b.Snacks {
+		snackIDs[i] = s.ID
+	}
 	// TODO: Save location if specified.
 	log.Println("placing order?")
 	s.ros.publish("snacbot/orders", dict{
 		"location_id": b.LocationID,
-		"snacks":      b.Snacks,
+		"snacks":      snackIDs,
 	})
 }

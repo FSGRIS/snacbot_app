@@ -57,6 +57,7 @@ func (s *pageServer) order(w http.ResponseWriter, r *http.Request) {
 	}
 	page := OrderPage{
 		Snacks: []Snack{
+			{ID: 0, Name: "Doritos", Image: ""},
 			{ID: 1, Name: "Snickers", Image: "snickers.jpg"},
 			{ID: 2, Name: "KitKat", Image: "kitkat.jpg"},
 			{ID: 3, Name: "Tim's Potato Chips", Image: "tims.jpg"},

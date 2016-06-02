@@ -29,6 +29,7 @@ func Run(dbFile, staticDir, templateDir string) {
 	r.HandleFunc("/login", pages.login).Methods("GET")
 	r.HandleFunc("/create_account", pages.createAccount).Methods("GET")
 	r.HandleFunc("/order", pages.order).Methods("GET")
+	r.HandleFunc("/api/locations", api.getLocations).Methods("GET")
 	r.HandleFunc("/api/login", api.login).Methods("POST")
 	r.HandleFunc("/api/logout", api.logout).Methods("GET")
 	r.HandleFunc("/api/create_account", api.createAccount).Methods("POST")
