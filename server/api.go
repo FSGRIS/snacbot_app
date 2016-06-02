@@ -11,8 +11,8 @@ import (
 )
 
 type point struct {
-	X int64 `json:"x"`
-	Y int64 `json:"y"`
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 type apiServer struct {
@@ -38,9 +38,9 @@ func newApiServer(db *sqlx.DB, ros *rosServer) *apiServer {
 	var resp struct {
 		Values struct {
 			Locs []struct {
-				ID int64 `json:"id"`
-				X  int64 `json:"x"`
-				Y  int64 `json:"y"`
+				ID int64   `json:"id"`
+				X  float64 `json:"x"`
+				Y  float64 `json:"y"`
 			} `json:"locs"`
 		} `json:"values"`
 	}
