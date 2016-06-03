@@ -173,6 +173,6 @@ func (s *apiServer) order(w http.ResponseWriter, r *http.Request) {
 	log.Println("placing order?")
 	s.ros.publish("snacbot/orders", dict{
 		"location_id": b.LocationID,
-		"snacks":      snackIDs,
+		"snack_ids":   snackIDs,
 	})
 }

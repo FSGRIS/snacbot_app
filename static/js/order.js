@@ -6,10 +6,18 @@ window.onload = function() {
     });
 };
 
-function populateMap(locations) {
-  Object.keys(locations).forEach(function(lid) {
-    locations[lid].selected = false;
-    console.log(locations[lid]);
+function populateMap(locById) {
+  var w = 222 * 2;
+  var h = 207 * 2;
+
+  var locations = [];
+  Object.keys(locById).forEach(function(lid) {
+    locations.push({
+      id: lid,
+      x: (locById[lid].x * 40),
+      y: h - (locById[lid].y * 40),
+      selected: false
+    });
   });
   var selectedLocation = null;
   for (var i = 0; i < locations.length; i++) {
@@ -19,9 +27,6 @@ function populateMap(locations) {
       break;
     }
   }
-
-  var w = 500;
-  var h = 500;
 
   var svg = d3.select('#map')
     .append('svg')
@@ -35,7 +40,7 @@ function populateMap(locations) {
     .attr('width', w)
     .attr('height', h)
     .append('image')
-    .attr('xlink:href', '/static/img/map.jpg')
+    .attr('xlink:href', '/static/img/newmap.jpg')
     .attr('width', w)
     .attr('height', h);
 
@@ -94,12 +99,12 @@ function populateMap(locations) {
       showStatus('No snacks selected', false);
       return;
     }
-    if (selectedLocation === null) {
+    /*if (selectedLocation === null) {
       showStatus('No location selected', false);
       return;
-    }
+    }*/
     var body = {
-      locationID: selectedLocation.id,
+      locationID: 1,//selectedLocation.id,
       saveLocation: $('#save-location').is(':checked'),
       snacks: snacks,
     };
