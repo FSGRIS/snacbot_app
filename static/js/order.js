@@ -13,7 +13,7 @@ function populateMap(locById) {
   var locations = [];
   Object.keys(locById).forEach(function(lid) {
     locations.push({
-      id: lid,
+      id: parseInt(lid),
       x: (locById[lid].x * 40),
       y: h - (locById[lid].y * 40),
       selected: false
@@ -99,12 +99,12 @@ function populateMap(locById) {
       showStatus('No snacks selected', false);
       return;
     }
-    /*if (selectedLocation === null) {
+    if (selectedLocation === null) {
       showStatus('No location selected', false);
       return;
-    }*/
+    }
     var body = {
-      locationID: 1,//selectedLocation.id,
+      locationID: selectedLocation.id,
       saveLocation: $('#save-location').is(':checked'),
       snacks: snacks,
     };
